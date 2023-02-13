@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -16,7 +17,7 @@ func allVideos(w http.ResponseWriter, r *http.Request) {
 	out, err := json.MarshalIndent(Videos, "", "     ")
 
 	if err != nil {
-		
+		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -30,7 +31,7 @@ func getVideo(w http.ResponseWriter, r *http.Request) {
 		video.Views = video.Views + 1
 		jsonval := jsonResponse{
 			Status: "OK",
-			msg:    "View Inc",
+			Msg:    "View Inc",
 			Video:  *video,
 		}
 
@@ -41,7 +42,7 @@ func getVideo(w http.ResponseWriter, r *http.Request) {
 	} else {
 		jsonval := jsonResponse{
 			Status: "FAIL",
-			msg:    "No Video with given Id",
+			Msg:    "No Video with given Id",
 		}
 		out, _ := json.MarshalIndent(jsonval, "", "     ")
 
@@ -56,11 +57,21 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var video Video
 	json.Unmarshal(reqBody, &video)
+	rand := RandStringRunes(10)
+	_, ok := Videos[rand]
+	for ok {
+		rand = RandStringRunes(15)
+		_, ok = Videos[rand]
+	}
 	video.Id = RandStringRunes(10)
 	fmt.Println(video)
 	Videos[video.Id] = &video
 
-	out, _ := json.MarshalIndent(video, "", "     ")
+	out, err := json.MarshalIndent(video, "", "     ")
+
+	if err != nil {
+		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)

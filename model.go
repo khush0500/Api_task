@@ -7,7 +7,7 @@ type Video struct {
 }
 
 type jsonResponse struct {
-	Status string `json:status`
-	msg    string `json:msg`
+	Status string `json:"status"`
+	Msg    string `json:"msg"`
 	Video  Video
 }
