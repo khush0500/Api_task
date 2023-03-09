@@ -6,11 +6,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/go-chi/chi"
 )
 
+var videosMutex = &sync.Mutex{}
+
 func allVideos(w http.ResponseWriter, r *http.Request) {
+	videosMutex.Lock()
+	defer videosMutex.Unlock()
 	fmt.Println(chi.URLParam(r, "id"))
 	out, err := json.MarshalIndent(Videos, "", "     ")
 
@@ -23,6 +28,8 @@ func allVideos(w http.ResponseWriter, r *http.Request) {
 }
 
 func getVideo(w http.ResponseWriter, r *http.Request) {
+	videosMutex.Lock()
+	defer videosMutex.Unlock()
 	id := chi.URLParam(r, "id")
 	video, ok := Videos[id]
 	if ok {
